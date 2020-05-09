@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon app.js",
+    "dev": "concurrently \"docker-compose up -d mongo\" \"docker-compose up node\"",
     "concurrently": "concurrently \"npm run dev\" \"cd client && npm start\""
   },
   "dependencies": {

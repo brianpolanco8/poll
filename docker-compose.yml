@@ -1,0 +1,25 @@
+version: "3"
+services:
+  node:
+    build: .
+    container_name: node
+    # command: sh -c "npm run dev"
+    command: "npm run dev"
+    environment:
+      - NODE_ENV=development
+      - PORT=${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app:cached # <--- This will map ./njs1 to /root/njs1 inside the container.
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - ~/Workspace/boxes/.data:/data/db
