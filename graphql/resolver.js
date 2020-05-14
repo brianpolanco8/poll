@@ -1,22 +1,51 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 module.exports = {
   Query: {
-    User: () => {
+    login: async (parent, { email, password }, { req }, info) => {
+      const user = await User.findOne({ email: email });
+      if (!user) {
+        const error = new Error("Email doesn't exists");
+        error.code = 401;
+        throw error;
+      }
+
+      const compare = await bcrypt.compare(password, user.password);
+
+      if (!compare) {
+        const error = new Error("Credentials don't match");
+        error.code = 401;
+        throw error;
+      }
+
+      const token = await jwt.sign(
+        {
+          user,
+          id: user._id,
+        },
+        `${process.env.TOKEN_SECRET}`,
+        {
+          algorithm: `${process.env.TOKEN_ALGORITHM}`,
+        }
+      );
+
       return {
-        name: "Brian",
-        email: "brian@applab.do",
-        password: "123456",
+        token,
       };
     },
   },
   Mutation: {
-    addBook: (parent, { booksInput }, context, info) => {
-      return { title: booksInput.title, genre: booksInput.genre };
-    },
     createUser: async (parent, { userInput }) => {
       const hashedPassword = await bcrypt.hash(userInput.password, 12);
+
+      const invalidEmail = await User.find({ email: userInput.email });
+      if (invalidEmail) {
+        const error = new Error("Email is already taken.");
+        error.code = 422;
+        throw error;
+      }
 
       const user = new User({
         name: userInput.name,

@@ -1,10 +1,6 @@
 const { gql } = require("apollo-server-express");
 
 module.exports = gql`
-  type Query {
-    User: User!
-  }
-
   type User {
     _id: ID!
     name: String!
@@ -13,14 +9,8 @@ module.exports = gql`
     profilePic: String
   }
 
-  type Book {
-    title: String!
-    genre: String!
-  }
-
-  type Mutation {
-    addBook(booksInput: BooksInput!): Book!
-    createUser(userInput: createUserInput): User!
+  type AuthData {
+    token: String
   }
 
   input createUserInput {
@@ -30,9 +20,12 @@ module.exports = gql`
     profilePic: String
   }
 
-  input BooksInput {
-    title: String!
-    genre: String!
+  type Mutation {
+    createUser(userInput: createUserInput): User!
+  }
+
+  type Query {
+    login(email: String!, password: String!): AuthData!
   }
 `;
 
