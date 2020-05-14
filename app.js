@@ -7,35 +7,33 @@ const { ApolloServer, gql } = require("apollo-server-express");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolver");
 const mongoose = require("mongoose");
+const auth = require("./middlewares/auth");
 
 const app = express();
 
 // app.use(logger("dev"));
 app.use(bodyParser.json());
 
-const schema = gql`
-  type Query {
-    me: User
-  }
-
-  type User {
-    username: String!
-  }
-`;
-
-const resolvers = {
-  Query: {
-    me: () => {
-      return {
-        username: "Robin Wieruch",
-      };
-    },
-  },
-};
+app.use(auth);
 
 const server = new ApolloServer({
   typeDefs: graphqlSchema,
   resolvers: graphqlResolver,
+  context: async ({ req }) => {
+    return {
+      req,
+    };
+  },
+  formatError: (error) => {
+    data = error.originalError.data;
+    message = error.originalError.message;
+    code = error.originalError.code || 500;
+    if (!code) {
+      code = 500;
+    }
+    error.custom = true;
+    return { message, code };
+  },
 });
 
 server.applyMiddleware({ app, path: "/graphql" });
