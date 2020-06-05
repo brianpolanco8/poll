@@ -1,46 +1,29 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const Survey = require("../models/Survey");
+const Message = require("../models/Message");
 const jwt = require("jsonwebtoken");
+const io = require("../socket");
+const authResolver = require('./Auth')
 
 module.exports = {
   Query: {
-    login: async (parent, { email, password }, { req }, info) => {
-      const user = await User.findOne({ email: email });
-      if (!user) {
-        const error = new Error("Email doesn't exists");
-        error.code = 401;
-        throw error;
-      }
+    /**
+     * Auth Resolver
+     */
+    ...authResolver,
+    getMessages: async (parent, args, { req }, info) => {
+      const messages = await Message.find({}).populate("user");
 
-      const compare = await bcrypt.compare(password, user.password);
-
-      if (!compare) {
-        const error = new Error("Credentials don't match");
-        error.code = 401;
-        throw error;
-      }
-
-      const token = await jwt.sign(
-        {
-          user,
-          id: user._id,
-        },
-        `${process.env.TOKEN_SECRET}`,
-        {
-          algorithm: `${process.env.TOKEN_ALGORITHM}`,
-        }
-      );
-
-      return {
-        token,
-      };
+      return messages;
     },
   },
   Mutation: {
     createUser: async (parent, { userInput }) => {
       const hashedPassword = await bcrypt.hash(userInput.password, 12);
 
-      const invalidEmail = await User.find({ email: userInput.email });
+      const invalidEmail = await User.findOne({ email: userInput.email });
+      console.log("invalidEmail", invalidEmail);
       if (invalidEmail) {
         const error = new Error("Email is already taken.");
         error.code = 422;
@@ -56,9 +39,46 @@ module.exports = {
 
       await user.save();
 
+      return true;
+    },
+    createSurvey: async (parent, { surveyInput }, { req }) => {
+      const survey = new Survey({
+        name: surveyInput.name,
+        questionsQuantity: surveyInput.questionsQuantity,
+      });
+
+      await survey.save();
+
       return {
-        ...user._doc,
-        _id: user._id.toString(),
+        ...survey._doc,
+        _id: survey._id.toString(),
+      };
+    },
+    sendMessage: async (parent, { message }, { req }) => {
+      // const user = await User.findById(req.userId);
+
+      if (!req.userId) {
+        const error = new Error("Not authenticated");
+        error.code = 401;
+        throw error;
+      }
+
+      const newMessage = new Message({
+        user: req.userId,
+        message,
+      });
+
+      await newMessage.save();
+      // await console.log(newMessage.populate("user").execPopulate());
+
+      await newMessage.populate("user").execPopulate();
+      io.getIO().emit("messageSent", { newMessage });
+
+      return {
+        ...newMessage._doc,
+        _id: newMessage._id.toString(),
+        createdAt: newMessage.createdAt.toISOString(),
+        updatedAt: newMessage.updatedAt.toISOString(),
       };
     },
   },

@@ -4,16 +4,20 @@
   "private": true,
   "scripts": {
     "start": "nodemon app.js",
-    "dev": "concurrently \"docker-compose up -d mongo\" \"docker-compose up node\"",
-    "concurrently": "concurrently \"npm run dev\" \"cd client && npm start\""
+    "dev": "concurrently \"npm run start\" \"cd client && npm start\"",
+    "test": "mocha",
+    "concurrently": "concurrently \"docker-compose up -d mongo\" \"docker-compose up node\""
   },
   "dependencies": {
     "apollo-server": "^2.13.1",
     "apollo-server-express": "^2.13.1",
+    "aws-sdk": "^2.680.0",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
+    "chai": "^4.2.0",
     "concurrently": "^5.2.0",
     "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
     "debug": "~2.6.9",
     "dotenv": "^8.2.0",
     "express": "~4.16.1",
@@ -22,8 +26,11 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^7.1.2",
     "mongoose": "^5.9.13",
     "morgan": "~1.9.1",
-    "nodemon": "^2.0.3"
+    "nodemon": "^2.0.3",
+    "react-router-dom": "^5.2.0",
+    "socket.io": "^2.3.0"
   }
 }
