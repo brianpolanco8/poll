@@ -9,7 +9,7 @@
     "concurrently": "concurrently \"docker-compose up -d mongo\" \"docker-compose up node\""
   },
   "dependencies": {
-    "apollo-server": "^2.13.1",
+    "apollo-server": "^2.14.2",
     "apollo-server-express": "^2.13.1",
     "aws-sdk": "^2.680.0",
     "bcrypt": "^4.0.1",
