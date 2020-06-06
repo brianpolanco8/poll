@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nodemon app.js",
     "dev": "concurrently \"npm run start\" \"cd client && npm start\"",
-    "test": "mocha",
+    "test": "mocha --timeout 5000",
     "concurrently": "concurrently \"docker-compose up -d mongo\" \"docker-compose up node\""
   },
   "dependencies": {

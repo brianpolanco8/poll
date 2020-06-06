@@ -4,6 +4,33 @@ node_js:
 cache:
   directories:
   - node_modules
+
+deploy:
+- provider: s3
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+  local_dir: dpl_cd_upload
+  skip_cleanup: true
+  on: &2
+    repo: organization/reponameHERE
+  bucket: yourBucketNameHERE
+  region: bucketRegionHERE
+- provider: codedeploy
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+  bucket: yourBucketNameHERE
+  key: latest.zip
+  bundle_type: zip
+  application: NameOfTheCodeDeployApplicationNameHERE
+  deployment_group: CodeDeployDeploymentGroupNameHERE
+  region: serverRegionHERE
+  on: *2
+
+script:
+  - zip -r latest *
+  - mkdir -p dpl_cd_upload
+  - mv latest.zip dpl_cd_upload/latest.zip
+  
 env:
   matrix:
   - secure: lGwj4M7atvyVe0qEJNG7LWzK7zA+Ic0fMISaB3di5ba/vaXSTmDtfAusXvT+V9fKkD+wBijkraqTRxegjgkdMp6/eZtyf7MDRXbBUUVvsa88TtoL47JyypAlpVqeN6WGas5j6LueT+k8kLDOqVnJpCqwQ29FqBvq2KBBraBjgtGH9tKOUOdEwvVGyvNBimcOPyi361+SXGG+bZYpOEqXeEmYQGr7bcXwd0XxX7KfLixkUpqw7UgkAzwbcJX5cVn4TC+K30dWQsH7+8QKkseOPQ65hgGa6GWdJpCGwYWCV67W4cknp+4pqqZWhVo2MDQNX8LId2hm6zvjzCX2Syi7sxaZ/n2J5Vgr5+b8ibO6E2ILwpG61tHCBKk1PvaQTJWfPFCDkTLcnv6x/J0C5gV+Da/FJWAiZsWeEmGrXDhlPS7i5+WsBOlGCK/ZVkXNLHGzgryvHbft8A6lC9J36nl89fOVcMYW9PT4cU2nOYfXgl1/Bz5FJCYUSl+JaN6IPBx8vL71u5yrTFo0tqhfte6E+qQYA6msTuFoRPKncayknePBM+OqOS+dPQ0ZoTz2vOFXKezXNRAdxWUQGQuyKtNw8eUgmoBizCgGrGWhvUCOY65HwgvZD9b+Ja1Xo87ePxaKOw6+WuN2We2bVgVio0g/pZST6w1viomdqnmVyDfiAVY=

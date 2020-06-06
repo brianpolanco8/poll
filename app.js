@@ -81,7 +81,7 @@ server.applyMiddleware({ app, path: "/graphql" });
 
 mongoose
   .connect(
-    "mongodb+srv://brian:jlz88KiWGAXRQ3lJ@cluster0-5nf18.mongodb.net/poll?retryWrites=true&w=majority",
+    `${process.env.MONGO_URI}`,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,

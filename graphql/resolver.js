@@ -13,6 +13,11 @@ module.exports = {
      */
     ...authResolver,
     getMessages: async (parent, args, { req }, info) => {
+      if (!req) {
+        const error = new Error("Not authenticated");
+        error.code = 401;
+        throw error;
+      }
       const messages = await Message.find({}).populate("user");
 
       return messages;
@@ -57,22 +62,27 @@ module.exports = {
     sendMessage: async (parent, { message }, { req }) => {
       // const user = await User.findById(req.userId);
 
-      if (!req.userId) {
-        const error = new Error("Not authenticated");
-        error.code = 401;
+      try {
+        if (!req.userId) {
+          const error = new Error("Not authenticated");
+          error.code = 401;
+          throw error;
+        }
+
+        const newMessage = new Message({
+          user: req.userId,
+          message,
+        });
+
+        await newMessage.save();
+        // await console.log(newMessage.populate("user").execPopulate());
+
+        await newMessage.populate("user").execPopulate();
+        io.getIO().emit("messageSent", { newMessage });
+      }
+      catch (error) {
         throw error;
       }
-
-      const newMessage = new Message({
-        user: req.userId,
-        message,
-      });
-
-      await newMessage.save();
-      // await console.log(newMessage.populate("user").execPopulate());
-
-      await newMessage.populate("user").execPopulate();
-      io.getIO().emit("messageSent", { newMessage });
 
       return {
         ...newMessage._doc,
